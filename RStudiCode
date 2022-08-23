@@ -1,0 +1,80 @@
+##example Rcode for the worksheet entitled "executive function and visual attention 
+##in soccer" that forms part of the taught lecture and seminar session
+##by Jack Brimmell (Uni of Bolton; J.Brimmell@bolton.ac.uk) - this content is 
+##copyrighty of Jack Brimmell but is free for sharing and utising with the
+##proper credit
+
+##create a dataframe
+id <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+group <- c(1, 1, 1, 1, 1, 2, 2, 2, 2, 2) #1 is control and 2 is QE trained
+group <- as.factor(group)
+QuietEye1 <- c(200, 180, 210, 150, 160, 220, 180, 190, 240, 200) #quiet eye duration at pre
+QuietEye2 <- c(210, 180, 210, 170, 165, 250, 190, 220, 270, 220) #quiet eye duration at post
+QuietEye3 <- c(190, 180, 200, 160, 150, 240, 200, 200, 230, 210) #quiet eye duration at retention
+Freekicks1 <- c(25, 20, 18, 23, 18, 20, 17, 22, 20, 22) #percentage of freekicks scored at pre
+Freekicks2 <- c(25, 18, 22, 22, 19, 26, 24, 25, 24, 27) #percentage of freekicks scored at post
+Freekicks3 <- c(24, 20, 22, 20, 20, 27, 26, 24, 23, 24) #percentage of freekicks scored at retention
+Passing1 <- c(70, 68, 56, 60, 69, 71, 57, 66, 58, 72) #passing acc at pre (%)
+Passing2 <- c(70, 66, 58, 62, 66, 78, 60, 69, 64, 75) #passing acc at post (%)
+Passing3 <- c(68, 69, 58, 59, 70, 75, 61, 66, 63, 74) #passing acc at retention (%)
+df <- data.frame(id, group, QuietEye1, QuietEye2, QuietEye3, Freekicks1,
+  Freekicks2, Freekicks3, Passing1, Passing2, Passing3) #make variables into a dataframe
+#packages
+library(ggplot2) #use install.packages("ggplot2") if you don't have it already
+library(panelr) #same as above but "panelr" if you don't have this one
+
+long_df <- long_panel(df, begin = 1, end = 3, label_location = "end") 
+long_df$wave <- as.factor(long_df$wave)
+#above pivots the dataframe to be better for longitudinal or RCT design 
+#run str(long_df) and str(df) to see the differeces (you can click to see
+#either or by selecting it from the global environment)
+
+##plots for the teaching session
+boxplot(QuietEye ~ wave, col = c("white", "grey"), data = long_df)
+boxplot(Freekicks ~ wave, col = c("white", "grey"), data = long_df)
+boxplot(Passing ~ wave, col = c("white", "grey"), data = long_df)
+ggplot(long_df, aes(x = QuietEye, y = Freekicks)) +
+  geom_point() + 
+  geom_smooth(method = lm)
+model1 <- lm(Freekicks ~ QuietEye, data = long_df)
+summary(model1)
+ggplot(long_df, aes(x = QuietEye, y = Passing)) +
+  geom_point() +
+  geom_smooth(method= lm)
+model2 <- lm(Passing ~ QuietEye, data = long_df)
+summary(model2)
+#above are boxplots and ggplots without considering group
+group.names <- list("1" = "Control", "2" = "QE Trained")
+group.labeller <- function(variable, value){
+  return(group.names[value])
+} ##changes the group labels of 1 to control and 2 to QE trained
+#below is quiet eye
+p <- ggplot(data = long_df, aes (x = wave, y = QuietEye))
+p <- p + geom_bar(stat = "identity", width = .5, position = "dodge")
+p <- p + facet_grid(. ~ group, labeller = group.labeller)
+P <- p + theme()
+p <- p + theme_light()
+p <- p + theme(axis.text.x = element_text(angle = 90))
+p
+model3 <- lm(QuietEye ~ group*wave, data = long_df)
+anova(model3)
+#below is freekicks
+l <- ggplot(data = long_df, aes (x = wave, y = Freekicks))
+l <- l + geom_bar(stat = "identity", width = .5, position = "dodge")
+l <- l + facet_grid(. ~ group, labeller = group.labeller)
+l <- l + theme_light()
+l <- l + theme(axis.text.x = element_text(angle = 90))
+l
+model4 <- lm(Freekicks ~ group*wave, data = long_df)
+anova(model4)
+#below is passing
+k <- ggplot(data = long_df, aes (x = wave, y = Passing))
+k <- k + geom_bar(stat = "identity", width = .5, position = "dodge")
+k <- k + facet_grid(. ~ group, labeller = group.labeller)
+k <- k + theme_light()
+k <- k + theme(axis.text.x = element_text(angle = 90))
+k
+model5 <- lm(Passing ~ group*wave, data = long_df)
+anova(model5)
+
+#end of code  - Jack Brimmell (J.Brimmell@bolton.ac.uk) (c)
